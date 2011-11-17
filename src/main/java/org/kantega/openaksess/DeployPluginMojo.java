@@ -28,7 +28,8 @@ import java.net.URL;
 /**
  * Goal which touches a timestamp file.
  *
- * @goal deploy-plugin
+ * @goal deploy
+ * @execute phase="test"
  *
  */
 public class DeployPluginMojo
@@ -56,11 +57,19 @@ public class DeployPluginMojo
     private File resourceDirectory;
 
 
+    /**
+     * Artifactfile
+     * @parameter expression="${project.build.directory}/${project.build.finalName}.jar"
+     * @required
+     */
+    private File artifactFile;
+
+
     public void execute()
         throws MojoExecutionException
     {
         try {
-            String params = "file=" + project.getArtifact().getFile().getAbsolutePath() +"&resourceDirectory=" + resourceDirectory.getAbsolutePath();
+            String params = "file=" + artifactFile.getAbsolutePath() +"&resourceDirectory=" + resourceDirectory.getAbsolutePath();
 
             String url = deploymentURL +"/PluginDeployment.action";
 
