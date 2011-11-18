@@ -29,7 +29,7 @@ import java.net.URL;
  * Goal which touches a timestamp file.
  *
  * @goal deploy
- * @execute phase="test"
+ * @execute phase="package"
  *
  */
 public class DeployPluginMojo
