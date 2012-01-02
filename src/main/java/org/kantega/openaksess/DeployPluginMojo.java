@@ -71,7 +71,10 @@ public class DeployPluginMojo
         try {
             String params = "file=" + artifactFile.getAbsolutePath() +"&resourceDirectory=" + resourceDirectory.getAbsolutePath();
 
-            String url = deploymentURL +"/PluginDeployment.action";
+            if(!deploymentURL.endsWith("/"))
+                deploymentURL +="/";
+
+            String url = deploymentURL +"PluginDeployment.action";
 
             getLog().info("Deploying to URL " + url);
 
