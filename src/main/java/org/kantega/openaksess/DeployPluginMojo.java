@@ -18,6 +18,7 @@ package org.kantega.openaksess;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.*;
@@ -66,8 +67,7 @@ public class DeployPluginMojo
 
 
     public void execute()
-        throws MojoExecutionException
-    {
+            throws MojoExecutionException, MojoFailureException {
         try {
             String params = "file=" + artifactFile.getAbsolutePath() +"&resourceDirectory=" + resourceDirectory.getAbsolutePath();
 
@@ -88,16 +88,22 @@ public class DeployPluginMojo
             outputStream.write(params.getBytes());
             outputStream.close();
 
-            String line = null;
+            int responseCode = urlConnection.getResponseCode();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringWriter sw = new StringWriter();
+            String line = null;
+            BufferedReader br = new BufferedReader(new InputStreamReader(responseCode == 200 ? urlConnection.getInputStream() : urlConnection.getErrorStream()));
             while((line = br.readLine()) != null) {
-                getLog().info("Server: " + line);
+                sw.append(line +"\n");
             }
             br.close();
 
-
-
+            if(responseCode != 200) {
+                getLog().error(sw.toString());
+                throw new MojoFailureException("Plugin deployment failed with exception: ");
+            } else {
+                getLog().info("Deployment succeded: " + sw.toString());
+            }
         } catch (MalformedURLException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         } catch (IOException e) {
