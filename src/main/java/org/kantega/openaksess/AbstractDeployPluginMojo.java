@@ -27,13 +27,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Goal which touches a timestamp file.
- *
- * @goal deploy
- * @execute phase="package"
  *
  */
-public class DeployPluginMojo
+public abstract class AbstractDeployPluginMojo
     extends AbstractMojo
 {
     /**
@@ -56,20 +52,20 @@ public class DeployPluginMojo
      * @required
      */
     private File resourceDirectory;
-
-
     /**
-     * Artifactfile
-     * @parameter expression="${project.build.directory}/${project.build.finalName}.jar"
+     * Unique plugin id
+     * @parameter expression="${project.groupId}:${project.artifactId}"
      * @required
      */
-    private File artifactFile;
+    private String pluginKey;
 
 
     public void execute()
             throws MojoExecutionException, MojoFailureException {
         try {
-            String params = "file=" + artifactFile.getAbsolutePath() +"&resourceDirectory=" + resourceDirectory.getAbsolutePath();
+            String params = "file=" + getPluginFile().getAbsolutePath()
+                    +"&resourceDirectory=" + resourceDirectory.getAbsolutePath()
+                    +"&id=" + pluginKey;
 
             if(!deploymentURL.endsWith("/"))
                 deploymentURL +="/";
@@ -77,7 +73,7 @@ public class DeployPluginMojo
             String url = deploymentURL +"PluginDeployment.action";
 
             getLog().info("Deploying to URL " + url);
-
+            long before = System.currentTimeMillis();
 
             HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
             urlConnection.setRequestMethod("POST");
@@ -102,7 +98,7 @@ public class DeployPluginMojo
                 getLog().error(sw.toString());
                 throw new MojoFailureException("Plugin deployment failed with exception: ");
             } else {
-                getLog().info("Deployment succeded: " + sw.toString());
+                getLog().info("Deployment succeded in " + (System.currentTimeMillis()-before) +"ms: " + sw.toString());
             }
         } catch (MalformedURLException e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -110,4 +106,6 @@ public class DeployPluginMojo
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
+
+    protected abstract File getPluginFile();
 }
