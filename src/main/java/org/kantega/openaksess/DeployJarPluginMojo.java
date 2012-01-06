@@ -6,7 +6,7 @@ import java.io.File;
  * Deploys a jar file
  *
  * @goal deploy-jar
- * @execute phase="test"
+ * @execute phase="package"
  */
 public class DeployJarPluginMojo extends AbstractDeployPluginMojo {
 
