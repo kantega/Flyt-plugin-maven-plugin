@@ -52,20 +52,14 @@ public abstract class AbstractDeployPluginMojo
      * @required
      */
     private File resourceDirectory;
-    /**
-     * Unique plugin id
-     * @parameter expression="${project.groupId}:${project.artifactId}"
-     * @required
-     */
-    private String pluginKey;
-
 
     public void execute()
             throws MojoExecutionException, MojoFailureException {
         try {
-            String params = "file=" + getPluginFile().getAbsolutePath()
-                    +"&resourceDirectory=" + resourceDirectory.getAbsolutePath()
-                    +"&id=" + pluginKey;
+            StringBuilder params = new StringBuilder("file=" + getPluginFile().getAbsolutePath()
+                    +"&resourceDirectory=" + resourceDirectory.getAbsolutePath());
+
+            addParameters(params);
 
             if(!deploymentURL.endsWith("/"))
                 deploymentURL +="/";
@@ -81,7 +75,7 @@ public abstract class AbstractDeployPluginMojo
             urlConnection.setDoOutput(true);
 
             OutputStream outputStream = urlConnection.getOutputStream();
-            outputStream.write(params.getBytes());
+            outputStream.write(params.toString().getBytes("utf-8"));
             outputStream.close();
 
             int responseCode = urlConnection.getResponseCode();
@@ -105,6 +99,10 @@ public abstract class AbstractDeployPluginMojo
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    protected void addParameters(StringBuilder params) {
+
     }
 
     protected abstract File getPluginFile();
