@@ -35,7 +35,6 @@ public abstract class AbstractDeployPluginMojo
     /**
      * Deployment URL
      * @parameter
-     * @required
      */
     private String deploymentURL;
 
@@ -61,6 +60,8 @@ public abstract class AbstractDeployPluginMojo
 
             addParameters(params);
 
+            String deploymentURL = getDeploymentURL();
+
             if(!deploymentURL.endsWith("/"))
                 deploymentURL +="/";
 
@@ -79,25 +80,57 @@ public abstract class AbstractDeployPluginMojo
             outputStream.close();
 
             int responseCode = urlConnection.getResponseCode();
+            InputStream stream = responseCode == 200 ? urlConnection.getInputStream() : urlConnection.getErrorStream();
 
-            StringWriter sw = new StringWriter();
-            String line = null;
-            BufferedReader br = new BufferedReader(new InputStreamReader(responseCode == 200 ? urlConnection.getInputStream() : urlConnection.getErrorStream()));
-            while((line = br.readLine()) != null) {
-                sw.append(line +"\n");
-            }
-            br.close();
+            String content = toString(stream);
 
             if(responseCode != 200) {
-                getLog().error(sw.toString());
+                getLog().error(content);
                 throw new MojoFailureException("Plugin deployment failed with exception: ");
             } else {
-                getLog().info("Deployment succeded in " + (System.currentTimeMillis()-before) +"ms: " + sw.toString());
+                getLog().info("Deployment succeded in " + (System.currentTimeMillis()-before) +"ms: " + content);
             }
         } catch (MalformedURLException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private String toString(InputStream stream) throws IOException {
+        StringWriter sw = new StringWriter();
+        String line = null;
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        while((line = br.readLine()) != null) {
+            sw.append(line +"\n");
+        }
+        br.close();
+        return sw.toString();
+    }
+
+    private String getDeploymentURL() throws MojoFailureException {
+        if(this.deploymentURL != null) {
+            return this.deploymentURL;
+        } else {
+            try {
+                String base = "http://localhost:8080";
+                URL url = new URL(base + "/oa-maven-plugin-context-path");
+                getLog().info("Guessing deployment URL from peeking at " + url);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+                if(urlConnection.getResponseCode() == 200) {
+                    String deploymentURL = base + toString(urlConnection.getInputStream()).trim();
+                    getLog().info("Deployment URL is: " + deploymentURL);
+                    return deploymentURL;
+                } else {
+                    throw  new MojoFailureException("Could not get context path from URL " + url.toExternalForm());
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
         }
     }
 
