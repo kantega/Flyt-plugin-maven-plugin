@@ -43,7 +43,7 @@ public abstract class AbstractDeployPluginMojo
      * @parameter expression="${project}"
      * @required
      */
-    private MavenProject project;
+    protected MavenProject project;
 
     /**
      * Resource directory
@@ -86,7 +86,7 @@ public abstract class AbstractDeployPluginMojo
 
             if(responseCode != 200) {
                 getLog().error(content);
-                throw new MojoFailureException("Plugin deployment failed with exception: ");
+                throw new MojoFailureException("Plugin deployment failed with message: " +urlConnection.getResponseMessage() +", " + content);
             } else {
                 getLog().info("Deployment succeded in " + (System.currentTimeMillis()-before) +"ms: " + content);
             }
