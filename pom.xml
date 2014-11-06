@@ -30,7 +30,7 @@
     <name>OpenAkess plugin Maven plugin</name>
 
     <scm>
-        <connection>scm:svn:https://opensource.kantega.no/svn/oaplugin-maven-plugin/trunk/</connection>
+        <connection>scm:git:git@gitlab.kantega.no:flyt-cms/flyt-plugin-maven-plugin.git/</connection>
     </scm>
 
     <description>
